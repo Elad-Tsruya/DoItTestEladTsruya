@@ -1,0 +1,37 @@
+{
+  "pubsub_scopes": "https://www.googleapis.com/auth/pubsub",
+  "bigquery_scope": "https://www.googleapis.com/auth/bigquery",
+  "topic_name": "DoItTopic",
+  "project_id": "doiteladtsruya",
+  "subscriber": "https://<project_id>.appspot.com/subscriber",
+  "subscription_name": "DoItSub",
+  "configuration": {
+    "load": {
+      "sourceFormat": "NEWLINE_DELIMITED_JSON",
+      "schema": {
+        "fields": [
+          {
+            "name": "evt",
+            "type": "STRING",
+            "mode": "REQUIRED"
+          },
+          {
+            "name": "ts",
+            "type": "INTEGER",
+            "mode": "REQUIRED"
+          },
+          {
+            "name": "msg",
+            "type": "STRING",
+            "mode": "NULLABLE"
+          }
+        ]
+      },
+      "destinationTable": {
+        "projectId": "doiteladtsruya",
+        "datasetId": "DoItDataSet",
+        "tableId": "eventsTable"
+      }
+    }
+  }
+}
