@@ -29,8 +29,9 @@ def handlePostFromPubSub():
     response = utils.storeMsgToBiqQuery(json.loads(request.data.decode('utf-8')))
 
     if not response["insertErrors"]:
-        return 'Invalid request', 400
-    return 'OK', 200
+        return 'OK', 200
+    return 'Invalid request', 400
+
 
 @app.errorhandler(500)
 def server_error(e):

@@ -123,20 +123,6 @@ def get_big_query():
 
     return big_query_client
 
-def create_big_query_client(http = None):
-    # Create a bigquery service object, using the application's default auth
-    credentials = GoogleCredentials.get_application_default()
-    bigquery = discovery.build('bigquery', 'v2', credentials=credentials)
-
-    credentials = oauth2client.GoogleCredentials.get_application_default()
-    if credentials.create_scoped_required():
-        credentials = credentials.create_scoped(bigquery_scope)
-    if not http:
-        http = httplib2.Http()
-    credentials.authorize(http)
-    V2_DISCOVERY_URI = 'https://www.googleapis.com/discovery/v1/apis/bigquery/v2/rest'
-    return discovery.build('bigquery', 'v2', http=http, discoveryServiceUrl=V2_DISCOVERY_URI)
-
 def storeMsgToBiqQuery(msg, num_retries=5):
     payload = json.dumps(msg['message']['data'])
     body_str = base64.b64decode(payload)
