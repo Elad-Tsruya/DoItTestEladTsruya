@@ -26,8 +26,9 @@ def handlePostFromMobileApp():
 
 @app.route('/subscriber', methods=['POST'])
 def handlePostFromPubSub():
-    status = utils.storeMsgToBiqQuery(json.loads(request.data.decode('utf-8')))
-    if status != 200:
+    response = utils.storeMsgToBiqQuery(json.loads(request.data.decode('utf-8')))
+
+    if not response["insertErrors"]:
         return 'Invalid request', 400
     return 'OK', 200
 

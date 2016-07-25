@@ -2,7 +2,7 @@
   "pubsub_scopes": "https://www.googleapis.com/auth/pubsub",
   "bigquery_scope": "https://www.googleapis.com/auth/bigquery",
   "topic_name": "DoItTopic",
-  "project_id": "doiteladtsruya",
+  "project_id": "eladdoittest",
   "subscriber": "https://<project_id>.appspot.com/subscriber",
   "subscription_name": "DoItSub",
   "configuration": {
@@ -28,7 +28,7 @@
         ]
       },
       "destinationTable": {
-        "projectId": "doiteladtsruya",
+        "projectId": "eladdoittest",
         "datasetId": "DoItDataSet",
         "tableId": "eventsTable"
       }

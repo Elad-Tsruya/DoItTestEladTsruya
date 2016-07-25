@@ -4,18 +4,20 @@
 # from oauth2client.client import GoogleCredentials
 # from apiclient import discovery
 # from oauth2client import client as oauth2client
+#import io
+#import googleapiclient
 
 import base64
 import logging
 import httplib2
 import json
 import time
-import io
+import uuid
 from googleapiclient import discovery
 from googleapiclient import errors
+from oauth2client.client import GoogleCredentials
 from oauth2client import client as oauth2client
-import googleapiclient
-
+from googleapiclient.http import MediaFileUpload
 
 ##########GLOBALS###########
 config = json.load(open("config.json"))
@@ -115,10 +117,16 @@ def get_big_query():
     global big_query_client
 
     if big_query_client is None:
-        big_query_client = create_big_query_client()
+        # big_query_client = create_big_query_client()
+        credentials = GoogleCredentials.get_application_default()
+        big_query_client = discovery.build('bigquery', 'v2', credentials=credentials)
+
     return big_query_client
 
 def create_big_query_client(http = None):
+    # Create a bigquery service object, using the application's default auth
+    credentials = GoogleCredentials.get_application_default()
+    bigquery = discovery.build('bigquery', 'v2', credentials=credentials)
 
     credentials = oauth2client.GoogleCredentials.get_application_default()
     if credentials.create_scoped_required():
@@ -129,36 +137,22 @@ def create_big_query_client(http = None):
     V2_DISCOVERY_URI = 'https://www.googleapis.com/discovery/v1/apis/bigquery/v2/rest'
     return discovery.build('bigquery', 'v2', http=http, discoveryServiceUrl=V2_DISCOVERY_URI)
 
-def storeMsgToBiqQuery(msg):
-
+def storeMsgToBiqQuery(msg, num_retries=5):
     payload = json.dumps(msg['message']['data'])
     body_str = base64.b64decode(payload)
     if body_str == "":
         return 400
-    with open('data.json', 'w+') as f:
-        json.dump(body_str, f)
-        f.close()
+    jsonData = json.loads(body_str)
 
-    bigQuery = get_big_query()
-    insert_request = bigQuery.jobs().insert(
-        projectId = project_id,
-        body = {
-            'configuration': configuration
-        },
-        media_body = googleapiclient.http.MediaFileUpload('data.json', 'application/octet-stream'))
-    job = insert_request.execute()
-    status_request = bigQuery.jobs().get(
-        projectId=job['jobReference']['projectId'],
-        jobId=job['jobReference']['jobId'])
+    insert_all_data = { "kind": "bigquery#tableDataInsertAllRequest",
+                        "rows": [{"json":{     "evt": jsonData["evt"],
+                                                "ts": jsonData["ts"],
+                                                "msg": jsonData["msg"]
+                                         }}]}
 
-    # Poll the job until it finishes.
-    while True:
-        result = status_request.execute(num_retries=2)
-
-        if result['status']['state'] == 'DONE':
-            if result['status'].get('errors'):
-                return 400
-            else:
-                return 200
-
-        time.sleep(1)
+    big_query_client = get_big_query()
+    return big_query_client.tabledata().insertAll(
+        projectId=project_id,
+        datasetId="DoItDataSet",
+        tableId="eventsTable",
+        body=insert_all_data).execute(num_retries=num_retries)
